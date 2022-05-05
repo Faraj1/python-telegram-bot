@@ -28,7 +28,7 @@ import telegram
 from telegram._utils.defaultvalue import DefaultValue
 from tests.conftest import env_var_2_bool
 
-IGNORED_OBJECTS = ('ResponseParameters',)
+IGNORED_OBJECTS = ("ResponseParameters",)
 IGNORED_PARAMETERS = {
     "self",
     "args",
@@ -87,14 +87,11 @@ def check_method(h4):
         # TODO: Check type via docstring
         assert check_required_param(
             tg_parameter, param, method.__name__
-        ), f'Param {param.name!r} of method {method.__name__!r} requirement mismatch!'
+        ), f"Param {param.name!r} of method {method.__name__!r} requirement mismatch!"
 
         # Now we will check that we don't pass default values if the parameter is not required.
-        # parameter[2] can either be Required/Yes or a paragraph where the first word has that info
-        telegram_param_required = is_parameter_required_by_tg(tg_parameter[2])
-
-        if not telegram_param_required:
-            default_arg_none = check_defaults_type(param)
+        if param.default is not inspect.Parameter.empty:  # If there is a default argument...
+            default_arg_none = check_defaults_type(param)  # check if it's None
             assert default_arg_none, f"Param {param.name!r} of {method.__name__!r} should be None"
 
         checked.append(tg_parameter[0])
@@ -138,8 +135,8 @@ def check_object(h4):
     checked = set()
     for tg_parameter in table:
         field: str = tg_parameter[0]  # From telegram docs
-        if field == 'from':
-            field = 'from_user'
+        if field == "from":
+            field = "from_user"
         elif (
             name.startswith("InlineQueryResult")
             or name.startswith("InputMedia")
@@ -163,10 +160,8 @@ def check_object(h4):
             tg_parameter, param, obj.__name__
         ), f"{obj.__name__!r} parameter {param.name!r} requirement mismatch"
 
-        telegram_param_required = is_parameter_required_by_tg(tg_parameter[2])
-
-        if not telegram_param_required:
-            default_arg_none = check_defaults_type(param)
+        if param.default is not inspect.Parameter.empty:  # If there is a default argument...
+            default_arg_none = check_defaults_type(param)  # check if its None
             assert default_arg_none, f"Param {param.name!r} of {obj.__name__!r} should be `None`"
 
         checked.add(field)
@@ -195,9 +190,9 @@ def check_object(h4):
 
 
 def is_parameter_required_by_tg(field: str) -> bool:
-    if field in {'Required', 'Yes'}:
+    if field in {"Required", "Yes"}:
         return True
-    if field.split('.', 1)[0] == 'Optional':  # splits the sentence and extracts first word
+    if field.split(".", 1)[0] == "Optional":  # splits the sentence and extracts first word
         return False
     else:
         return True
@@ -212,7 +207,7 @@ def check_required_param(
         :obj:`bool`: The boolean returned represents whether our parameter's requirement (optional
         or required) is the same as Telegram's or not.
     """
-    is_ours_required = param.default is inspect.Signature.empty
+    is_ours_required = param.default is inspect.Parameter.empty
     telegram_requires = is_parameter_required_by_tg(param_desc[2])
     # Handle cases where we provide convenience intentionally-
     if param.name in ignored_param_requirements.get(method_or_obj_name, {}):
@@ -224,20 +219,20 @@ def check_defaults_type(ptb_param: inspect.Parameter) -> bool:
     return True if DefaultValue.get_value(ptb_param.default) is None else False
 
 
-to_run = env_var_2_bool(os.getenv('TEST_OFFICIAL'))
+to_run = env_var_2_bool(os.getenv("TEST_OFFICIAL"))
 argvalues = []
 names = []
 
 if to_run:
     argvalues = []
     names = []
-    request = httpx.get('https://core.telegram.org/bots/api')
-    soup = BeautifulSoup(request.text, 'html.parser')
+    request = httpx.get("https://core.telegram.org/bots/api")
+    soup = BeautifulSoup(request.text, "html.parser")
 
-    for thing in soup.select('h4 > a.anchor'):
+    for thing in soup.select("h4 > a.anchor"):
         # Methods and types don't have spaces in them, luckily all other sections of the docs do
         # TODO: don't depend on that
-        if '-' not in thing['name']:
+        if "-" not in thing["name"]:
             h4 = thing.parent
 
             # Is it a method
@@ -249,7 +244,7 @@ if to_run:
                 names.append(h4.text)
 
 
-@pytest.mark.skipif(not to_run, reason='test_official is not enabled')
-@pytest.mark.parametrize(('method', 'data'), argvalues=argvalues, ids=names)
+@pytest.mark.skipif(not to_run, reason="test_official is not enabled")
+@pytest.mark.parametrize(("method", "data"), argvalues=argvalues, ids=names)
 def test_official(method, data):
     method(data)
