@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU Lesser Public License
 # along with this program.  If not, see [http://www.gnu.org/licenses/].
 
-from telegram import MessageAutoDeleteTimerChanged, VoiceChatEnded
+from telegram import MessageAutoDeleteTimerChanged, VideoChatEnded
 
 
 class TestMessageAutoDeleteTimerChanged:
@@ -25,11 +25,11 @@ class TestMessageAutoDeleteTimerChanged:
     def test_slot_behaviour(self, mro_slots):
         action = MessageAutoDeleteTimerChanged(self.message_auto_delete_time)
         for attr in action.__slots__:
-            assert getattr(action, attr, 'err') != 'err', f"got extra slot '{attr}'"
+            assert getattr(action, attr, "err") != "err", f"got extra slot '{attr}'"
         assert len(mro_slots(action)) == len(set(mro_slots(action))), "duplicate slot"
 
     def test_de_json(self):
-        json_dict = {'message_auto_delete_time': self.message_auto_delete_time}
+        json_dict = {"message_auto_delete_time": self.message_auto_delete_time}
         madtc = MessageAutoDeleteTimerChanged.de_json(json_dict, None)
 
         assert madtc.message_auto_delete_time == self.message_auto_delete_time
@@ -45,7 +45,7 @@ class TestMessageAutoDeleteTimerChanged:
         a = MessageAutoDeleteTimerChanged(100)
         b = MessageAutoDeleteTimerChanged(100)
         c = MessageAutoDeleteTimerChanged(50)
-        d = VoiceChatEnded(25)
+        d = VideoChatEnded(25)
 
         assert a == b
         assert hash(a) == hash(b)

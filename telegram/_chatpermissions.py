@@ -20,7 +20,7 @@
 
 from typing import Any
 
-from telegram import TelegramObject
+from telegram._telegramobject import TelegramObject
 
 
 class ChatPermissions(TelegramObject):
@@ -79,14 +79,14 @@ class ChatPermissions(TelegramObject):
     """
 
     __slots__ = (
-        'can_send_other_messages',
-        'can_invite_users',
-        'can_send_polls',
-        'can_send_messages',
-        'can_send_media_messages',
-        'can_change_info',
-        'can_pin_messages',
-        'can_add_web_page_previews',
+        "can_send_other_messages",
+        "can_invite_users",
+        "can_send_polls",
+        "can_send_messages",
+        "can_send_media_messages",
+        "can_change_info",
+        "can_pin_messages",
+        "can_add_web_page_previews",
     )
 
     def __init__(
@@ -121,3 +121,25 @@ class ChatPermissions(TelegramObject):
             self.can_invite_users,
             self.can_pin_messages,
         )
+
+    @classmethod
+    def all_permissions(cls) -> "ChatPermissions":
+        """
+        This method returns an :class:`ChatPermissions` instance with all attributes
+        set to :obj:`True`. This is e.g. useful when unrestricting a chat member with
+        :meth:`telegram.Bot.restrict_chat_member`.
+
+        .. versionadded:: 20.0
+
+        """
+        return cls(True, True, True, True, True, True, True, True)
+
+    @classmethod
+    def no_permissions(cls) -> "ChatPermissions":
+        """
+        This method returns an :class:`ChatPermissions` instance
+        with all attributes set to :obj:`False`.
+
+        .. versionadded:: 20.0
+        """
+        return cls(False, False, False, False, False, False, False, False)
